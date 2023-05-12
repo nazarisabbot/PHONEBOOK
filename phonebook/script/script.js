@@ -24,6 +24,11 @@ const data = [
 ];
 
 {
+  const addContactData = (contact) => {
+    data.push(contact);
+    console.log(data);
+  };
+
   const createContainer = () => {
     const container = document.createElement('div');
     container.classList.add('container');
@@ -190,12 +195,12 @@ const data = [
     ]);
 
     const table = createTable();
-    const form = createForm();
+    const {form, overLay} = createForm();
     const footer = createFooter(title);
 
     header.headerContainer.append(logo);
 
-    main.mainContainer.append(buttonGroup.btnWrapper, table, form.overLay);
+    main.mainContainer.append(buttonGroup.btnWrapper, table, overLay);
 
     app.append(header, main, footer);
 
@@ -204,8 +209,8 @@ const data = [
       logo,
       btnAdd: buttonGroup.btns[0],
       btnDel: buttonGroup.btns[1],
-      formOverlay: form.overLay,
-      form: form.form,
+      formOverlay: overLay,
+      form,
     };
   };
 
@@ -258,51 +263,36 @@ const data = [
     });
   };
 
-  const init = (selectorApp, title) => {
-    const app = document.querySelector(selectorApp);
-    const phoneBook = renderPhoneBook(app, title);
+  const modalControl = (btnAdd, formOverlay) => {
+    const openModal = () => {
+      formOverlay.classList.add('is-visible');
+    };
 
-    const {list, logo, btnAdd, btnDel, formOverlay} = phoneBook;
-
-    // Функционал
-    const allRow = renderContacts(list, data);
-
-    hoverRow(allRow, logo);
-
-    // const objEvent = {
-    //   a: 10,
-    //   b: 20,
-    //   handleEvent(event) {
-    //     if (event.ctrlKey) {
-    //       this.bar();
-    //     } else {
-    //       this.foo();
-    //     }
-    //   },
-    //   bar() {
-    //     document.body.style.backgroundColor = 'black';
-    //   },
-    //   foo() {
-    //     formOverlay.classList.add('is-visible');
-    //   },
-    // };
+    const closeModal = () => {
+      formOverlay.classList.remove('is-visible');
+    };
 
     btnAdd.addEventListener('click', () => {
-      formOverlay.classList.add('is-visible');
+      openModal();
     });
-
-    /*     form.addEventListener('click', (event) => {
-      event.stopPropagation();
-    }); */
 
     formOverlay.addEventListener('click', (e) => {
       const target = e.target;
 
-      if (target === formOverlay || target.classList.contains('close')) {
-        formOverlay.classList.remove('is-visible');
+      if (
+        target === formOverlay ||
+        target.classList.contains('close')
+      ) {
+        closeModal();
       }
     });
 
+    return {
+      closeModal,
+    };
+  };
+
+  const deleteControl = (btnDel, list) => {
     btnDel.addEventListener('click', () => {
       const delColection = document.querySelectorAll('.delete');
 
@@ -316,6 +306,42 @@ const data = [
         e.target.closest('.contact').remove();
       }
     });
+  };
+
+  const addContactDataPage = (newContact, list) => {
+    list.append(createRow(newContact));
+  };
+
+  const formControl = (form, list, closeModal) => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+
+      const newContact = Object.fromEntries(formData);
+
+      addContactDataPage(newContact, list);
+      addContactData(newContact);
+
+      form.reset();
+      closeModal();
+    });
+  };
+
+  const init = (selectorApp, title) => {
+    const app = document.querySelector(selectorApp);
+    const phoneBook = renderPhoneBook(app, title);
+
+    const {list, logo, btnAdd, btnDel, formOverlay, form} = phoneBook;
+
+    // Функционал
+    const allRow = renderContacts(list, data);
+
+    const {closeModal} = modalControl(btnAdd, formOverlay);
+
+    hoverRow(allRow, logo);
+    deleteControl(btnDel, list);
+    formControl(form, list, closeModal);
 
     setTimeout(() => {
       const contact = createRow({
@@ -325,18 +351,6 @@ const data = [
       });
       list.append(contact);
     }, 2000);
-
-    // document.addEventListener('touchstart', (e) => {
-    //   console.log(e.type);
-    // });
-
-    // document.addEventListener('touchmove', (e) => {
-    //   console.log(e.type);
-    // });
-
-    // document.addEventListener('touchend', (e) => {
-    //   console.log(e.type);
-    // });
   };
 
   window.phoneBookInit = init;
