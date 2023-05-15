@@ -1,34 +1,6 @@
 'use strict';
 
-const data = [
-  {
-    name: 'Иван',
-    surname: 'Петров',
-    phone: '+79514545454',
-  },
-  {
-    name: 'Игорь',
-    surname: 'Семёнов',
-    phone: '+79999999999',
-  },
-  {
-    name: 'Семён',
-    surname: 'Иванов',
-    phone: '+79800252525',
-  },
-  {
-    name: 'Мария',
-    surname: 'Попова',
-    phone: '+79876543210',
-  },
-];
-
 {
-  const addContactData = (contact) => {
-    data.push(contact);
-    console.log(data);
-  };
-
   const createContainer = () => {
     const container = document.createElement('div');
     container.classList.add('container');
@@ -243,6 +215,35 @@ const data = [
     return tr;
   };
 
+  // Local Storage function
+  const getStorage = (key) => {
+    const contacts = JSON.parse(localStorage.getItem(key));
+
+    if (contacts === null) {
+      return [];
+    }
+
+    return contacts;
+  };
+
+  const setStorage = (key, obj) => {
+    const contacts = getStorage(key);
+    contacts.push(obj);
+    localStorage.setItem(key, JSON.stringify(contacts));
+  };
+
+  const removeStorage = (num) => {
+    const contacts = getStorage('contacts');
+    contacts.forEach((item, i, arr) => {
+      if (item.phone === num) {
+        arr.splice(i, 1);
+      }
+    });
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  };
+
+  //
+
   const renderContacts = (elem, data) => {
     const allRow = data.map(createRow);
     elem.append(...allRow);
@@ -304,6 +305,9 @@ const data = [
     list.addEventListener('click', (e) => {
       if (e.target.closest('.del-icon')) {
         e.target.closest('.contact').remove();
+        const parent = e.target.closest('.contact');
+        const num = parent.children[3].textContent;
+        removeStorage(num);
       }
     });
   };
@@ -320,8 +324,9 @@ const data = [
 
       const newContact = Object.fromEntries(formData);
 
+      setStorage('contacts', newContact);
+
       addContactDataPage(newContact, list);
-      addContactData(newContact);
 
       form.reset();
       closeModal();
@@ -335,7 +340,8 @@ const data = [
     const {list, logo, btnAdd, btnDel, formOverlay, form} = phoneBook;
 
     // Функционал
-    const allRow = renderContacts(list, data);
+    const conatacts = getStorage('contacts');
+    const allRow = renderContacts(list, conatacts);
 
     const {closeModal} = modalControl(btnAdd, formOverlay);
 
@@ -343,14 +349,14 @@ const data = [
     deleteControl(btnDel, list);
     formControl(form, list, closeModal);
 
-    setTimeout(() => {
-      const contact = createRow({
-        name: 'Назар',
-        surname: 'Урс',
-        phone: '+79999999999',
-      });
-      list.append(contact);
-    }, 2000);
+    // setTimeout(() => {
+    //   const contact = createRow({
+    //     name: 'Назар',
+    //     surname: 'Урс',
+    //     phone: '+79999999999',
+    //   });
+    //   list.append(contact);
+    // }, 2000);
   };
 
   window.phoneBookInit = init;
