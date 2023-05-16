@@ -1,4 +1,4 @@
-const getStorage = (key) => {
+/* const getStorage = (key) => {
   const contacts = JSON.parse(localStorage.getItem(key));
 
   if (contacts === null) {
@@ -6,7 +6,10 @@ const getStorage = (key) => {
   }
 
   return contacts;
-};
+}; */
+
+const getStorage = (key) =>
+  JSON.parse(localStorage.getItem(key)) || [];
 
 const setStorage = (key, obj) => {
   const contacts = getStorage(key);
